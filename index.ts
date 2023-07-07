@@ -15,16 +15,16 @@ interface Translator {
   translate(text: string): any
 }
 abstract class Creator {
-  public abstract factoryMethod(): Translator
+  public abstract getTranlator(): Translator
   
   public translate(): any
   {
-    this.factoryMethod();
+    this.getTranlator();
   }
 }
 
 class YandexCreator extends Creator {
-  public factoryMethod(): Translator {
+  public getTranlator(): Translator {
     return new YandexTranslator();
   }
 }
@@ -42,25 +42,11 @@ class YandexTranslator implements Translator {
   
   public async translate( text ): Promise<any>
   {
-    const circularReplacer = () => {
-      const seen = new WeakSet();
-      return (key, value) => {
-        if (typeof value === 'object' && value !== null) {
-          if (seen.has(value)) {
-            return '[Circular]';
-          }
-          seen.add(value);
-        }
-        return value;
-      };
-    };
-
-
-    let options = {
+    let options = JSON.stringify({
       sourceLanguageCode: 'en',
       targetLanguageCode: 'ru',
       texts: text
-    };
+    });
     
     const headers = this.headers
     
@@ -90,7 +76,9 @@ app.post('/word', async (req: any, res: any) => {
     }
   }
 
-  res.send(await new YandexTranslator().translate(await getExamples()))
+  const response = await new YandexTranslator().translate(await getExamples());
+
+  res.send(response.data)
 
 });
 
