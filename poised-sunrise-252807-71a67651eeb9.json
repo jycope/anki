@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "poised-sunrise-252807",
+  "private_key_id": "71a67651eeb91ada175f4606fcfa699b25b45ea6",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC5xLqoDh3Qk5Y4\nGjo1EvUlxqr4Inbthqf2iunZY8WTFV5t6sKLj9VlEe6EjQ4t3EV6FOOZchU5Q29u\ng928rtaOAKBiDwY4ImufIZ+91D7ZePNqAp/pcd+TGfBajTns8dUsDfVl0We2GZ7d\nMQJt7G6+Z44vmNHUb7My3DOyER6T+UJzzKbZC0upgIIK7FVNNgoG0/dW/qYX4xXX\nxo/sR7cnPoNMpUl9yNORVaWNm4+E9hZeia2WCenuQph9Cjx+fW4q+hN+C6wsJm/+\nTQahrgn6KLmNnthW1l32V3ieeNLfCa2esU8l2B9ZDLfDvjr8/RxSWDV1fY2/WkN1\njioZj0J1AgMBAAECggEAJS/x2qb6xnBo86GicdHx86Y1vvbtPkbEtFiiD/PGTxeJ\nv/CtEbGRGwqwJ+YxxrHv0YzBdAvvnjc25RVuK7GHP0V2VbLiwJV5XFFnkCFfFHs/\nJQNR/jIeuqyIXiQjyqAtl4RS0ddNztkJoYdIUHdyQtjpkHMj3AYhRgbpLVX6fE3j\nxfNMH5A2t+wKtQt1b8ByMnL53a/YtvLFdCCEb9xaPNEb6n6T5vMs7BdMwk4M9ITl\nSnaDqX8ajJcuj/p9T+ZLp8ppfaTEuGLmsL2Eyt323MSyEgHqq6+N8u8P5+SRxPlX\nd51kclPrUYfM56rQfq0eYrxjpmdnUpoSFZkk1dXReQKBgQDowq8kaOv7XzvNBHWf\ncoD2plvTUnn1mc793lUuWt0qhsifwyeiCfsJxlXmpp/D2agIIi1coWiR7tff++pN\nYgJvRTLhAEMNNh1ij0mMxrzNxnmaFOvzmWkybh+nMn9QLEMdJNnql4wxVxVZP2zW\nTMWzAum07HLDRqr6pO+sa2+MTQKBgQDMUPAKxTuY+XurMZg6zx0kJAw+1eRZuIao\ngG/BYXnihqW7HPy40FRfwd9IitDwdIxwQP+y4MevvstGQ/WR4Po2LpX5ay/zkpkZ\nJgyaSyEMTUtORStWAMHyp+mNpKbLmqZv1L3zfI6Gmk3r+DBGrBPRYKqSN+odx00Q\nv/hEoieCyQKBgQCHVGowaTCLPpuuX+Fji1egEKli/JkcSwkmYZZ1FS9yAluzR+xL\nMjJbRI29RTOu02X3FKf7K315G7035WgdBdcUis9CMrzJeaUsINNKnmI34iXhiDiH\nsbKQN6b/t0R+gL2kvEBXPTWtmkw3T8Ef+BMaOZ9YKgGvt+7BPBR90xlQIQKBgFM2\n081PL0rKsbez51Bscm350JL3Ap4YLaALT3jvfnjoZi+jSrrq/rJRf+NHxnlovpop\nnvr32dyWVKw1mZrkioPuzV5cbZdCqeA4QwHEf51HDdi/Cztn65YtFU5/NP/P6OG7\nP/IfVN01k278Eo12IEwylsYex9eBCL49sZwifv0hAoGAfjRmYLGJjOSv2SVei/6r\nEwhChlJjnlE4ufL/qpGh2aHMqNqEZmHNzVupzZl0Pe9xbA5RjMY3FYDGy+EtHnam\nYpU9yfFxzy76MMbEgyjTrcol0dC3OwcfT2ScHKAfIfYhwOswbqDWSmJ8yx0E00QY\napVBzMpGOxXmVGMwnnTeaRw=\n-----END PRIVATE KEY-----\n",
+  "client_email": "translating-text@poised-sunrise-252807.iam.gserviceaccount.com",
+  "client_id": "104020273278281683176",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/translating-text%40poised-sunrise-252807.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
