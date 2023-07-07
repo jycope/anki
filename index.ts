@@ -12,7 +12,7 @@ app.use(bodyParser.json())
 
 
 interface Translator {
-  translate(text: Array<any>): any
+  translate(text: string): any
 }
 abstract class Creator {
   public abstract factoryMethod(): Translator
@@ -30,7 +30,7 @@ class YandexCreator extends Creator {
 }
 
 class YandexTranslator implements Translator {
-  private apiKey = 't1.9euelZqXyMubkomJksydj5KJncjGx-3rnpWalpqanMqXk8uNx5yPz8fKlp3l8_cNQmBa-e9wKGx5_t3z901wXVr573AobHn-zef1656VmpaKjZaanJaVlJqeiprNz82U7_zF656VmpaKjZaanJaVlJqeiprNz82U.eVUBlBHq5hMpBEHU4AVzayF0EBJX77xFbnMbxGSLyVCOz3vx3fHpqzMW5PuBZqQ4rzYYJtnpg-Pr0gHZjEK4DA';
+  private apiKey = 't1.9euelZrHysiRm5jHmsmQicudyJ7Ll-3rnpWalpqanMqXk8uNx5yPz8fKlp3l8_c8V15a-e9-W1xN_N3z93wFXFr5735bXE38zef1656Vmo-Vx5ONjJ3JmpiXkJaOipfJ7_zF656Vmo-Vx5ONjJ3JmpiXkJaOipfJ.5V7lis5W_rE5cRDBMZZcDTdCVHBVB38kbrRZvq-xop9RvScaEdRmkU2fMC5aDv1n2BnUlKwmr8ZuIMSi0iLsBw';
 
   private headers = {
     'Content-Type': 'text/plain',
@@ -61,9 +61,6 @@ class YandexTranslator implements Translator {
       targetLanguageCode: 'ru',
       texts: text
     };
-
-    console.log(3);
-    
     
     const headers = this.headers
     
