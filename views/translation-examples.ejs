@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Примеры переводов</title>
+</head>
+<body>
+  <h1>Примеры переводов</h1>
+  
+  <% if (examples && examples.length > 0) { %>
+    <ul>
+      <% examples.forEach((example, index) => { %>
+        <li>
+          <%= example.text %>
+          <br/>
+          <%= example.textTranslate %>
+          <form action="/submit-translation" method="POST">
+            <input type="hidden" name="selectedExample" value="<%= example %>" />
+            <button type="submit">Отправить</button>
+          </form>
+        </li>
+      <% }); %>
+    </ul>
+  <% } else { %>
+    <p>Нет доступных примеров переводов</p>
+  <% } %>
+</body>
+</html>

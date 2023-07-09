@@ -73,10 +73,17 @@ app.post('/word', async (req: any, res: any) => {
       console.log('Ошибка при выполнении запроса:', error);
     }
   }
+  
+  const updatedData = await Promise.all(
+    (await getExamples()).map(async (item: Promise<string>) => {    
+      return {
+        text: item,
+        textTranslate: await new YandexTextTranslator().translate(item),
+      };
+    })
+  );  
 
-  const response = await new YandexTranslator().translate(await getExamples());
-
-  res.send(response.data)
+  res.render('translation-examples', { examples: await updatedData})
 
 });
 
