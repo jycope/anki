@@ -1,8 +1,6 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
-// URL веб-страницы, которую вы хотите спарсить
-
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser')
@@ -10,27 +8,27 @@ const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
-
-interface Translator {
-  translate(text: string): any
-}
-abstract class Creator {
-  public abstract getTranlator(): Translator
+abstract class TextTranslator {
+  public abstract getTextTranslator(): TextTranslatorConnector
   
   public translate(): any
   {
-    this.getTranlator();
+    this.getTextTranslator();
   }
 }
 
-class YandexCreator extends Creator {
-  public getTranlator(): Translator {
-    return new YandexTranslator();
+interface TextTranslatorConnector {
+  translate(text: string): Promise<string>
+}
+
+class YandexTranslator extends TextTranslator {
+  public getTextTranslator(): TextTranslatorConnector {
+    return new YandexTextTranslator();
   }
 }
 
-class YandexTranslator implements Translator {
-  private apiKey = 't1.9euelZrHysiRm5jHmsmQicudyJ7Ll-3rnpWalpqanMqXk8uNx5yPz8fKlp3l8_c8V15a-e9-W1xN_N3z93wFXFr5735bXE38zef1656Vmo-Vx5ONjJ3JmpiXkJaOipfJ7_zF656Vmo-Vx5ONjJ3JmpiXkJaOipfJ.5V7lis5W_rE5cRDBMZZcDTdCVHBVB38kbrRZvq-xop9RvScaEdRmkU2fMC5aDv1n2BnUlKwmr8ZuIMSi0iLsBw';
+class YandexTextTranslator implements TextTranslatorConnector {
+  private apiKey = 't1.9euelZqYzpLNmM6NmZvOkcnOlJuKle3rnpWalpqanMqXk8uNx5yPz8fKlp3l8_ckSFVa-e8qWjtq_N3z92R2Ulr57ypaO2r8zef1656VmsyalYrJnorLyoyOlpuPic6U7_zF656VmsyalYrJnorLyoyOlpuPic6U.ws_VR3yPKgi6bCHxJXVpyu-orReNy3P86LPdQAojGlCOIxvYQJ-HL39Q2EPBaSRF9AT_SFUP9-_C4RoXdX9jAQ';
 
   private headers = {
     'Content-Type': 'text/plain',
@@ -40,7 +38,7 @@ class YandexTranslator implements Translator {
   private folderId = 'b1g5moh8p0918sljpfjr'
   private url = `https://translate.api.cloud.yandex.net/translate/v2/translate?folderId=${this.folderId}`
   
-  public async translate( text ): Promise<any>
+  public async translate( text ): Promise<string>
   {
     let options = JSON.stringify({
       sourceLanguageCode: 'en',
