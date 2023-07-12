@@ -5,6 +5,7 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser')
 
+app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
@@ -28,7 +29,7 @@ class YandexTranslator extends TextTranslator {
 }
 
 class YandexTextTranslator implements TextTranslatorConnector {
-  private apiKey = 't1.9euelZqYzpLNmM6NmZvOkcnOlJuKle3rnpWalpqanMqXk8uNx5yPz8fKlp3l8_ckSFVa-e8qWjtq_N3z92R2Ulr57ypaO2r8zef1656VmsyalYrJnorLyoyOlpuPic6U7_zF656VmsyalYrJnorLyoyOlpuPic6U.ws_VR3yPKgi6bCHxJXVpyu-orReNy3P86LPdQAojGlCOIxvYQJ-HL39Q2EPBaSRF9AT_SFUP9-_C4RoXdX9jAQ';
+  private apiKey = 't1.9euelZqOkceQyZ6LmJ2QkJ6KiseVzu3rnpWalpqanMqXk8uNx5yPz8fKlp3l8_ddWE5a-e83enIf_d3z9x0HTFr57zd6ch_9zef1656VmpKTjJWYz4qbz5rKlMeNzsyS7_zF656VmpKTjJWYz4qbz5rKlMeNzsyS.ueuIQuQ1dP8Ob-yxND36pkWqvrWII-719EMLTMJtulus2B_RkZDBkzXEb0nIAEuzs7Pj3rJBU1Szu51aE0sYBw';
 
   private headers = {
     'Content-Type': 'text/plain',
@@ -47,8 +48,9 @@ class YandexTextTranslator implements TextTranslatorConnector {
     });
     
     const headers = this.headers
+    const response = await axios.post(this.url, options, { headers })    
     
-    return await axios.post(this.url, options, { headers })
+    return response.data.translations[0].text;
   }
 }
 
@@ -73,6 +75,22 @@ app.post('/word', async (req: any, res: any) => {
       console.log('Ошибка при выполнении запроса:', error);
     }
   }
+
+  async function getTransctiption() {
+    try {
+      const response = await axios.get(url);
+
+      if (response.status === 200) {
+        const html = response.data;
+        const $ = cheerio.load(html);
+        const transcription = $('.ipa.dipa.lpr-2.lpl-1:first').text();
+
+        return transcription
+      }      
+    } catch (error) {
+      console.log('Ошибка при выполнении запроса:', error);
+    }
+  }
   
   const updatedData = await Promise.all(
     (await getExamples()).map(async (item: Promise<string>) => {    
@@ -81,9 +99,9 @@ app.post('/word', async (req: any, res: any) => {
         textTranslate: await new YandexTextTranslator().translate(item),
       };
     })
-  );  
+  );
 
-  res.render('translation-examples', { examples: await updatedData})
+  res.render('translation-examples', { examples: await updatedData, transctiption: await getTransctiption()})
 
 });
 
