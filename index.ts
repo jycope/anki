@@ -18,9 +18,8 @@ app.use(bodyParser.json())
 
 abstract class TextTranslator {
   public abstract getTextTranslator(): TextTranslatorConnector
-  
-  public translate(): any
-  {
+
+  public translate(): any {
     this.getTextTranslator();
   }
 }
@@ -45,19 +44,97 @@ class YandexTextTranslator implements TextTranslatorConnector {
 
   private folderId = 'b1g5moh8p0918sljpfjr'
   private url = `https://translate.api.cloud.yandex.net/translate/v2/translate?folderId=${this.folderId}`
-  
-  public async translate( text ): Promise<string>
-  {
+
+  public async translate(text): Promise<string> {
     let options = JSON.stringify({
       sourceLanguageCode: 'en',
       targetLanguageCode: 'ru',
       texts: text
     });
-    
+
     const headers = this.headers
-    const response = await axios.post(this.url, options, { headers })    
-    
+    const response = await axios.post(this.url, options, { headers })
+
     return response.data.translations[0].text;
+  }
+}
+
+
+abstract class LoadedPage
+{
+  protected url: string;
+
+  constructor(url: string) {
+    this.url = url;
+  }
+  
+  abstract getLoadedPage(): Promise<string>;
+}
+
+class HTMLLoadedPage extends LoadedPage {
+  protected url: string = ''
+
+  constructor(url: string) {
+    super(url)
+    this.url = url;
+  }
+  
+  public async getLoadedPage() {
+    try {
+      const response = await axios.get(this.url);
+
+      if (response.status === 200) {
+        const html = response.data;
+        const $ = cheerio.load(html);
+        return $
+      }
+    } catch (error) {
+      console.log('Ошибка при выполнении запроса:', error);
+    }
+  }
+}
+
+class WordTranscription {
+  private word: string = '';
+
+  constructor(word: string) {
+    this.word = `https://dictionary.cambridge.org/dictionary/english-russian/${word}`
+  }
+  
+  public async getTranscription(): Promise<string>
+  {
+    try {
+      const loadedPage = new HTMLLoadedPage(this.word).getLoadedPage()
+
+      const $ = await loadedPage;
+      const transcription = $('.ipa.dipa.lpr-2.lpl-1:first').text();
+
+      return transcription
+    } catch (error) {
+      console.log('Ошибка при выполнении запроса:', error);
+    }
+  }
+}
+
+class SelectorObj {
+  private word: string = '';
+
+  constructor(word: string) {
+    this.word = `https://dictionary.cambridge.org/dictionary/english-russian/${word}`
+  }
+
+  public async getSelectorObj(selector: string): Promise<cheerio.Cheerio>
+  {
+    try {
+      const loadedPage = new HTMLLoadedPage(this.word).getLoadedPage()
+
+      const $ = await loadedPage;
+      const selectorObj = $(selector);
+      
+      return selectorObj
+    } catch (error) {
+      console.log('Ошибка при выполнении запроса:', error);
+    }
   }
 }
 
@@ -65,23 +142,18 @@ app.post('/word', async (req: any, res: any) => {
   const word = req.body.word
   const url = `https://dictionary.cambridge.org/dictionary/english-russian/${word}`;
   const translator = await new YandexTextTranslator();
+
   async function getExamples() {
-    try {
-      const response = await axios.get(url);
+    const examples = await new SelectorObj(word).getSelectorObj('.degs.had.lbt.lb-cm .lbb.lb-cm.lpt-10 .deg');
+    const examplesArr = []
 
-      if (response.status === 200) {
-        const html = response.data;
-        const $ = cheerio.load(html);
-        const examples = $('.degs.had.lbt.lb-cm .lbb.lb-cm.lpt-10 .deg');
-        const examplesArr = []
+    await Promise.all(examples.map(async (index, element: any) => {
+      const example = (await new SelectorObj(word).getSelectorObj(element)).text().trim();      
 
-        examples.each((index, element: any) => examplesArr.push($(element).text().trim()));
+      examplesArr.push(example);
+    }))    
 
-        return examplesArr
-      }      
-    } catch (error) {
-      console.log('Ошибка при выполнении запроса:', error);
-    }
+    return examplesArr
   }
 
   async function getTranscription() {
@@ -117,7 +189,7 @@ app.post('/word', async (req: any, res: any) => {
 
   res.render('translation-examples', { 
     examples: await updatedData,
-    transcription: await getTranscription(),
+    transcription: await new WordTranscription(word).getTranscription(),
     translate: await translator.translate(word),
     word: word
   })
@@ -128,15 +200,15 @@ app.get('/word', (req: any, res: any) => res.sendFile(__dirname + '/public/uploa
 
 app.listen(3000, () => console.log('Сервер запущен на порту 3000'));
 
-app.post('/submit-translation', async (req: any, res: any) => 
-  addCardToDeck(
-    'English', 
-    req.body.example, 
-    req.body.exampleTranslated, 
-    req.body.word, 
-    req.body.transcription
-  )
-)
+// app.post('/submit-translation', async (req: any, res: any) => 
+//   addCardToDeck(
+//     'English', 
+//     req.body.example, 
+//     req.body.exampleTranslated, 
+//     req.body.word, 
+//     req.body.transcription
+//   )
+// )
 
 async function addCardToDeck(deckName, front, back, word, transcription) {
   const url = 'http://localhost:8765';
@@ -200,7 +272,7 @@ async function storeMediaFile(word) {
     "action": "storeMediaFile",
     "version": 6,
     "params": {
-      "filename": `_${word}`,
+      "filename": `${word}.mp3`,
       "data": audioData
     }
   }
