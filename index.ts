@@ -35,7 +35,7 @@ class YandexTranslator extends TextTranslator {
 }
 
 class YandexTextTranslator implements TextTranslatorConnector {
-  private apiKey = 't1.9euelZrIi4zLjpHOjYuNj42TlJWcjO3rnpWalpqanMqXk8uNx5yPz8fKlp3l8_cbUEVa-e8rHiMA_d3z91t-Qlr57yseIwD9zef1656VmpzGnMaRm4vGlY-LjYqenJqd7_zF656VmpzGnMaRm4vGlY-LjYqenJqd.lPQGZFmnD-DPCpbXzz-kWTGvm1l4qBNcYDFD16Pq87MqZb4A3qsDxqc6dA6tEL1ooUrBhe3S7wKsH_2i_h3QAA';
+  private apiKey = process.env.API_KEY;;
 
   private headers = {
     'Content-Type': 'text/plain',
