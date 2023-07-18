@@ -200,24 +200,21 @@ app.get('/word', (req: any, res: any) => res.sendFile(__dirname + '/public/uploa
 
 app.listen(3000, () => console.log('Сервер запущен на порту 3000'));
 
-// app.post('/submit-translation', async (req: any, res: any) => 
-//   addCardToDeck(
-//     'English', 
-//     req.body.example, 
-//     req.body.exampleTranslated, 
-//     req.body.word, 
-//     req.body.transcription
-//   )
-// )
+app.post('/submit-translation', async (req: any, res: any) => {
+  addCardToDeck(
+    'English', 
+    req.body.example, 
+    req.body.exampleTranslated, 
+    req.body.word, 
+    req.body.transcription
+  )
+
+  return res.status(200).send('Card added successfully');
+});
 
 async function addCardToDeck(deckName, front, back, word, transcription) {
   const url = 'http://localhost:8765';
-  storeMediaFile(word);
-  const audioUrl = googleTTS.getAudioUrl('House', {
-    lang: 'en',
-    slow: false,
-    host: 'https://translate.google.com',
-  });  
+  await storeMediaFile(word); 
   
   const requestBody = {
     action: 'addNote',
@@ -246,13 +243,11 @@ async function addCardToDeck(deckName, front, back, word, transcription) {
   };
 
   try {
-    const response = await axios.post(url, requestBody, {
+    await axios.post(url, requestBody, {
       headers: {
         'Content-Type': 'application/json',
       }
     });
-
-    console.log('Card added successfully:', response.data);
   } catch (error) {
     console.error('Error adding card:', error);
   }
@@ -278,17 +273,12 @@ async function storeMediaFile(word) {
   }
 
   try {
-    const response = await axios.post(url, requestBody, {
+    await axios.post(url, requestBody, {
       headers: {
         'Content-Type': 'application/json',
       }
     });
-
-    console.log('Image added successfully:', response.data);
   } catch (error) {
     console.error('Error adding image:', error);
   }
 }
-
-// Пример использования функции добавления карточки в колоду
-;
