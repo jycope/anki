@@ -11,6 +11,7 @@ const http = require('http');
 const https = require('https');
 const urlParse = require('url').parse;
 const googleTTS = require('google-tts-api');
+const puppeteer = require('puppeteer')
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -42,7 +43,7 @@ class YandexTextTranslator implements TextTranslatorConnector {
     'Authorization': `Bearer ${this.apiKey}`
   }
 
-  private folderId = 'b1g5moh8p0918sljpfjr'
+  private folderId = 'b1ga8lcorqhdc0o0khvl'
   private url = `https://translate.api.cloud.yandex.net/translate/v2/translate?folderId=${this.folderId}`
 
   public async translate(text): Promise<string> {
@@ -60,14 +61,13 @@ class YandexTextTranslator implements TextTranslatorConnector {
 }
 
 
-abstract class LoadedPage
-{
+abstract class LoadedPage {
   protected url: string;
 
   constructor(url: string) {
     this.url = url;
   }
-  
+
   abstract getLoadedPage(): Promise<string>;
 }
 
@@ -78,7 +78,7 @@ class HTMLLoadedPage extends LoadedPage {
     super(url)
     this.url = url;
   }
-  
+
   public async getLoadedPage() {
     try {
       const response = await axios.get(this.url);
@@ -94,15 +94,37 @@ class HTMLLoadedPage extends LoadedPage {
   }
 }
 
+class PuppeterLoadedPage extends LoadedPage {
+  protected url: string = ''
+
+  constructor(url: string) {
+    super(url)
+    this.url = url;
+  }
+
+  public async getLoadedPage() {
+    try {
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+
+      await page.setDefaultNavigationTimeout(120000);
+      await page.goto(this.url);
+
+      return page
+    } catch (error) {
+      console.log('Ошибка при выполнении запроса:', error);
+    }
+  }
+}
+
 class WordTranscription {
   private word: string = '';
 
   constructor(word: string) {
     this.word = `https://dictionary.cambridge.org/dictionary/english-russian/${word}`
   }
-  
-  public async getTranscription(): Promise<string>
-  {
+
+  public async getTranscription(): Promise<string> {
     try {
       const loadedPage = new HTMLLoadedPage(this.word).getLoadedPage()
 
@@ -111,29 +133,51 @@ class WordTranscription {
 
       return transcription
     } catch (error) {
-      console.log('Ошибка при выполнении запроса:', error);
+      console.log('Ошибка при получении транскрипции:', error);
     }
   }
 }
 
-class SelectorObj {
+class SelectorObjCheerio {
   private word: string = '';
 
   constructor(word: string) {
     this.word = `https://dictionary.cambridge.org/dictionary/english-russian/${word}`
   }
 
-  public async getSelectorObj(selector: string): Promise<cheerio.Cheerio>
-  {
+  public async getSelectorObj(selector: string): Promise<cheerio.Cheerio> {
     try {
       const loadedPage = new HTMLLoadedPage(this.word).getLoadedPage()
 
       const $ = await loadedPage;
       const selectorObj = $(selector);
-      
+
       return selectorObj
     } catch (error) {
-      console.log('Ошибка при выполнении запроса:', error);
+      console.log('Ошибка при получении загруженной страницы:', error);
+    }
+  }
+}
+
+class SelectorObjPuppeter {
+  private word: string = '';
+
+  constructor(word: string) {
+    this.word = `https://dictionary.cambridge.org/dictionary/english-russian/${word}`
+  }
+
+  public async getSelectorObj(selector: string) {
+    try {
+      const loadedPage = new PuppeterLoadedPage(this.word).getLoadedPage()
+
+      const page = await loadedPage;
+
+      await page.waitForSelector(selector);
+      await page.$(selector)
+
+      return page
+    } catch (error) {
+      console.log('Ошибка при получении загруженной страницы:', error);
     }
   }
 }
@@ -144,14 +188,13 @@ app.post('/word', async (req: any, res: any) => {
   const translator = await new YandexTextTranslator();
 
   async function getExamples() {
-    const examples = await new SelectorObj(word).getSelectorObj('.degs.had.lbt.lb-cm .lbb.lb-cm.lpt-10 .deg');
+    const examples = await new SelectorObjPuppeter(word).getSelectorObj('.degs.had.lbt.lb-cm .lbb.lb-cm.lpt-10 .deg');
     const examplesArr = []
 
-    await Promise.all(examples.map(async (index, element: any) => {
-      const example = (await new SelectorObj(word).getSelectorObj(element)).text().trim();      
-
-      examplesArr.push(example);
-    }))    
+    let value = await examples.evaluate(() => {
+      return Array.from(document.querySelectorAll('.degs.had.lbt.lb-cm .lbb.lb-cm.lpt-10 .deg'))
+        .map(el => el.textContent)
+    })
 
     return examplesArr
   }
@@ -166,15 +209,15 @@ app.post('/word', async (req: any, res: any) => {
         const transcription = $('.ipa.dipa.lpr-2.lpl-1:first').text();
 
         return transcription
-      }      
+      }
     } catch (error) {
       console.log('Ошибка при выполнении запроса:', error);
     }
   }
-  
+
   const updatedData = await Promise.all(
     (await getExamples()).map(async (example: Promise<string>) => {
-      
+
       const translatedWord = await translator.translate(word)
       const translatedExample = await translator.translate(example)
 
@@ -187,7 +230,7 @@ app.post('/word', async (req: any, res: any) => {
     })
   );
 
-  res.render('translation-examples', { 
+  res.render('translation-examples', {
     examples: await updatedData,
     transcription: await new WordTranscription(word).getTranscription(),
     translate: await translator.translate(word),
@@ -201,11 +244,11 @@ app.get('/word', (req: any, res: any) => res.sendFile(__dirname + '/public/uploa
 app.listen(3000, () => console.log('Сервер запущен на порту 3000'));
 
 app.post('/submit-translation', async (req: any, res: any) => {
-  addCardToDeck(
-    'English', 
-    req.body.example, 
-    req.body.exampleTranslated, 
-    req.body.word, 
+  await addCardToDeck(
+    'English',
+    req.body.example,
+    req.body.exampleTranslated,
+    req.body.word,
     req.body.transcription
   )
 
@@ -213,9 +256,9 @@ app.post('/submit-translation', async (req: any, res: any) => {
 });
 
 async function addCardToDeck(deckName, front, back, word, transcription) {
-  const url = 'http://localhost:8765';
-  await storeMediaFile(word); 
-  
+  const url = process.env.ANKI_URL;
+  await storeMediaFile(word);
+
   const requestBody = {
     action: 'addNote',
     version: 6,
@@ -229,7 +272,7 @@ async function addCardToDeck(deckName, front, back, word, transcription) {
         },
         "audio": [{
           "filename": `${word}.mp3`,
-          "path": `/home/dmnikolaevv/.local/share/Anki2/1-й пользователь/collection.media/${word}.mp3`,
+          "path": `${process.env.PATH_TO_MEDIA}/${word}.mp3`,
           "fields": [
             "Front"
           ]
@@ -254,7 +297,7 @@ async function addCardToDeck(deckName, front, back, word, transcription) {
 }
 
 async function storeMediaFile(word) {
-  const url = 'http://localhost:8765';
+  const url = process.env.ANKI_URL;
   const audioData = await googleTTS
     .getAudioBase64(word, {
       lang: 'en',

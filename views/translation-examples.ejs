@@ -17,7 +17,6 @@
           <br/>
           <%= example[word].textTranslate %>
           <form action="/submit-translation" method="POST">
-            <input type="hidden" name="example" value="<%= example[word].text %>" />
             <input type="hidden" name="exampleTranslated" value="<%= example[word].textTranslate %>" />
             <input type="hidden" name="wordTranslated" value="<%= translate %>" />
             <input type="hidden" name="word" value="<%= word %>" />
