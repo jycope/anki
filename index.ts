@@ -115,6 +115,21 @@ class PuppeterLoadedPage extends LoadedPage {
       console.log('Ошибка при выполнении запроса:', error);
     }
   }
+
+  public async getSelectorObj(selector: string) {
+    try {
+      const loadedPage = new PuppeterLoadedPage(this.url).getLoadedPage()
+
+      const page = await loadedPage;
+
+      await page.waitForSelector(selector);
+      await page.$(selector)
+
+      return page
+    } catch (error) {
+      console.log('Ошибка при получении загруженной страницы:', error);
+    }
+  }
 }
 
 class WordTranscription {
@@ -126,10 +141,8 @@ class WordTranscription {
 
   public async getTranscription(): Promise<string> {
     try {
-      const loadedPage = new HTMLLoadedPage(this.word).getLoadedPage()
-
-      const $ = await loadedPage;
-      const transcription = $('.ipa.dipa.lpr-2.lpl-1:first').text();
+      const loadedPage = await new SelectorObjPuppeter(this.word).getSelectorObj('.ipa.dipa.lpr-2.lpl-1')
+      const transcription = await loadedPage.$eval('.ipa.dipa.lpr-2.lpl-1', (el) => el.innerText)
 
       return transcription
     } catch (error) {
@@ -186,32 +199,26 @@ app.post('/word', async (req: any, res: any) => {
   const word = req.body.word
   const url = `https://dictionary.cambridge.org/dictionary/english-russian/${word}`;
   const translator = await new YandexTextTranslator();
+  const selectorObjPuppeter = await new SelectorObjPuppeter(word);
 
   async function getExamples() {
-    const examples = await new SelectorObjPuppeter(word).getSelectorObj('.degs.had.lbt.lb-cm .lbb.lb-cm.lpt-10 .deg');
-    const examplesArr = []
+    const examples = await selectorObjPuppeter.getSelectorObj('.degs.had.lbt.lb-cm .lbb.lb-cm.lpt-10 .deg');
 
-    let value = await examples.evaluate(() => {
+    return await examples.evaluate(() => {
       return Array.from(document.querySelectorAll('.degs.had.lbt.lb-cm .lbb.lb-cm.lpt-10 .deg'))
         .map(el => el.textContent)
     })
-
-    return examplesArr
   }
+
 
   async function getTranscription() {
     try {
-      const response = await axios.get(url);
+      const loadedPage = await selectorObjPuppeter.getSelectorObj('.ipa.dipa.lpr-2.lpl-1')
+      const transcription = await loadedPage.$eval('.ipa.dipa.lpr-2.lpl-1', (el) => el.innerText)
 
-      if (response.status === 200) {
-        const html = response.data;
-        const $ = cheerio.load(html);
-        const transcription = $('.ipa.dipa.lpr-2.lpl-1:first').text();
-
-        return transcription
-      }
+      return transcription
     } catch (error) {
-      console.log('Ошибка при выполнении запроса:', error);
+      console.log('Ошибка при получении транскрипции:', error);
     }
   }
 
@@ -232,7 +239,7 @@ app.post('/word', async (req: any, res: any) => {
 
   res.render('translation-examples', {
     examples: await updatedData,
-    transcription: await new WordTranscription(word).getTranscription(),
+    transcription: await getTranscription(),
     translate: await translator.translate(word),
     word: word
   })
