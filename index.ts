@@ -60,14 +60,13 @@ class YandexTextTranslator implements TextTranslatorConnector {
 }
 
 
-abstract class LoadedPage
-{
+abstract class LoadedPage {
   protected url: string;
 
   constructor(url: string) {
     this.url = url;
   }
-  
+
   abstract getLoadedPage(): Promise<string>;
 }
 
@@ -78,7 +77,7 @@ class HTMLLoadedPage extends LoadedPage {
     super(url)
     this.url = url;
   }
-  
+
   public async getLoadedPage() {
     try {
       const response = await axios.get(this.url);
@@ -100,9 +99,8 @@ class WordTranscription {
   constructor(word: string) {
     this.word = `https://dictionary.cambridge.org/dictionary/english-russian/${word}`
   }
-  
-  public async getTranscription(): Promise<string>
-  {
+
+  public async getTranscription(): Promise<string> {
     try {
       const loadedPage = new HTMLLoadedPage(this.word).getLoadedPage()
 
@@ -123,14 +121,13 @@ class SelectorObj {
     this.word = `https://dictionary.cambridge.org/dictionary/english-russian/${word}`
   }
 
-  public async getSelectorObj(selector: string): Promise<cheerio.Cheerio>
-  {
+  public async getSelectorObj(selector: string): Promise<cheerio.Cheerio> {
     try {
       const loadedPage = new HTMLLoadedPage(this.word).getLoadedPage()
 
       const $ = await loadedPage;
       const selectorObj = $(selector);
-      
+
       return selectorObj
     } catch (error) {
       console.log('Ошибка при выполнении запроса:', error);
@@ -148,10 +145,10 @@ app.post('/word', async (req: any, res: any) => {
     const examplesArr = []
 
     await Promise.all(examples.map(async (index, element: any) => {
-      const example = (await new SelectorObj(word).getSelectorObj(element)).text().trim();      
+      const example = (await new SelectorObj(word).getSelectorObj(element)).text().trim();
 
       examplesArr.push(example);
-    }))    
+    }))
 
     return examplesArr
   }
@@ -166,15 +163,15 @@ app.post('/word', async (req: any, res: any) => {
         const transcription = $('.ipa.dipa.lpr-2.lpl-1:first').text();
 
         return transcription
-      }      
+      }
     } catch (error) {
       console.log('Ошибка при выполнении запроса:', error);
     }
   }
-  
+
   const updatedData = await Promise.all(
     (await getExamples()).map(async (example: Promise<string>) => {
-      
+
       const translatedWord = await translator.translate(word)
       const translatedExample = await translator.translate(example)
 
@@ -187,7 +184,7 @@ app.post('/word', async (req: any, res: any) => {
     })
   );
 
-  res.render('translation-examples', { 
+  res.render('translation-examples', {
     examples: await updatedData,
     transcription: await new WordTranscription(word).getTranscription(),
     translate: await translator.translate(word),
@@ -202,10 +199,10 @@ app.listen(3000, () => console.log('Сервер запущен на порту 
 
 app.post('/submit-translation', async (req: any, res: any) => {
   addCardToDeck(
-    'English', 
-    req.body.example, 
-    req.body.exampleTranslated, 
-    req.body.word, 
+    'English',
+    req.body.example,
+    req.body.exampleTranslated,
+    req.body.word,
     req.body.transcription
   )
 
@@ -214,8 +211,8 @@ app.post('/submit-translation', async (req: any, res: any) => {
 
 async function addCardToDeck(deckName, front, back, word, transcription) {
   const url = 'http://localhost:8765';
-  await storeMediaFile(word); 
-  
+  await storeMediaFile(word);
+
   const requestBody = {
     action: 'addNote',
     version: 6,
@@ -229,7 +226,7 @@ async function addCardToDeck(deckName, front, back, word, transcription) {
         },
         "audio": [{
           "filename": `${word}.mp3`,
-          "path": `/home/dmnikolaevv/.local/share/Anki2/1-й пользователь/collection.media/${word}.mp3`,
+          "path": `${process.env.PATH_TO_MEDIA}/${word}.mp3`,
           "fields": [
             "Front"
           ]
