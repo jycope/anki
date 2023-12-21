@@ -42,7 +42,7 @@ class YandexTextTranslator implements TextTranslatorConnector {
     'Authorization': `Bearer ${this.apiKey}`
   }
 
-  private folderId = 'b1g5moh8p0918sljpfjr'
+  private folderId = process.env.FOLDER_ID
   private url = `https://translate.api.cloud.yandex.net/translate/v2/translate?folderId=${this.folderId}`
 
   public async translate(text): Promise<string> {
@@ -80,7 +80,13 @@ class HTMLLoadedPage extends LoadedPage {
 
   public async getLoadedPage() {
     try {
-      const response = await axios.get(this.url);
+      const response = await axios.request({
+        method: "GET",
+        url: this.url,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+        }
+      });
 
       if (response.status === 200) {
         const html = response.data;
